@@ -19,6 +19,11 @@ Gem::Specification.new do |spec|
     f.match(%r{^(test|doc)/})
   end
 
+  # Add the asset build artifacts to the gem. The official version of Comfy doesn't package these
+  # and instead depends on running a Rake task after installation; we're running that task as a
+  # part of publishing the gem to our package registry (see `.github/workflows/gem-push.yml`).
+  spec.files += Dir.glob("app/assets/builds/**/*")
+
   spec.required_ruby_version = '>= 3.2.0'
   spec.metadata['rubygems_mfa_required'] = 'true'
 
