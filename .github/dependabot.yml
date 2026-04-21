@@ -1,7 +1,26 @@
+# Please see the documentation for all configuration options:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
 version: 2
+registries:
+  ruby-sqm:
+    type: rubygems-server
+    url: https://rubygems.pkg.github.com/sqm
+    token: ${{secrets.DEPENDABOT_PACKAGES_READ}}
+    replaces-base: true
 updates:
-  # Enable version updates for npm
-  - package-ecosystem: "bundler"
-    directory: "/"  # The root directory where your Gemfile is located
+  - package-ecosystem: bundler
+    insecure-external-code-execution: allow
+    registries:
+      - ruby-sqm
+    commit-message:
+      prefix: 'dependabot(bundle): '
+    directory: /
+    labels:
+      - 'dependencies'
+    open-pull-requests-limit: 10
+    pull-request-branch-name:
+      separator: '-'
     schedule:
-      interval: "monthly" # Options: "daily", "weekly", "monthly"
+      day: sunday
+      interval: weekly
