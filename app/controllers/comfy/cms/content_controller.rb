@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Comfy::Cms::ContentController < Comfy::Cms::BaseController
+  include ComfortableMediaSurfer::Content::LinkDecoration
+
   # Authentication module must have `authenticate` method
   include ComfortableMediaSurfer.config.public_auth.to_s.constantize
 
@@ -20,7 +22,7 @@ class Comfy::Cms::ContentController < Comfy::Cms::BaseController
       respond_to do |format|
         format.html { render_page }
         format.json do
-          @cms_page.content = decorate_links(
+          @cms_page.content = decorate_cms_links(
             render_to_string(inline: @cms_page.content_cache, layout: false)
           )
           json_page = @cms_page.as_json(ComfortableMediaSurfer.config.page_to_json_options)
@@ -36,7 +38,7 @@ protected
     return render_raw_page(status) unless mime_type == 'text/html'
 
     rendered = render_to_string(inline: @cms_page.content_cache, layout: false)
-    render  html: decorate_links(rendered).html_safe,
+    render  html: decorate_cms_links(rendered).html_safe,
             layout: app_layout,
             status: status,
             content_type: mime_type
@@ -49,19 +51,6 @@ protected
             layout: app_layout,
             status: status,
             content_type: mime_type
-  end
-
-  # Decorate anchor tags in the final, ERB-evaluated page HTML: external links
-  # get nofollow/blank, quote-CTA links get tracking params. Runs here (post-ERB,
-  # per request) rather than at cache time because content_cache holds unevaluated
-  # ERB; decorating it earlier would corrupt partials/components/helpers.
-  def decorate_links(html)
-    ComfortableMediaSurfer::Content::LinkDecorator.new(
-      html,
-      site_host: @cms_site&.hostname,
-      current_path: @cms_page&.full_path,
-      cta_class: ComfortableMediaSurfer.config.cta_link_class
-    ).call
   end
 
   # it's possible to control mimetype of a page by creating a `mime_type` field

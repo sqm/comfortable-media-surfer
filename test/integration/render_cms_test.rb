@@ -83,6 +83,10 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
           content_b: { partial: 'render_test/test' },
           content_c: { template: 'render_test/render_layout' }
         }
+      when 'layout_with_link'
+        render cms_layout: 'default', cms_fragments: {
+          content: '<a href="https://external.test">Ext</a>'
+        }
       when 'layout_with_status'
         render cms_layout: 'default', status: 404
       when 'layout_invalid'
@@ -189,6 +193,20 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
     assert_equal 'custom page content', response.body
   end
 
+  def test_explicit_cms_page_decorates_links
+    page = comfy_cms_pages(:child)
+    page.update(slug: 'test-page', fragments_attributes: [
+      { identifier: 'content',
+        content: '<a href="https://external.test">Ext</a>' \
+                 '<a href="/quote" class="view-carriers-show-btn-cta">Get A Free Quote</a>' }
+    ])
+    get '/render-page?type=page_explicit'
+    assert_response :success
+    assert_match 'target="_blank"', response.body
+    assert_match 'rel="noopener nofollow"', response.body
+    assert_match 'so=', response.body
+  end
+
   def test_explicit_with_translation
     I18n.locale = :fr
 
@@ -222,6 +240,13 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
     assert assigns(:cms_site)
     assert assigns(:cms_layout)
     assert_equal comfy_cms_layouts(:default), assigns(:cms_layout)
+  end
+
+  def test_cms_layout_decorates_links
+    get '/render-layout?type=layout_with_link'
+    assert_response :success
+    assert_match 'target="_blank"', response.body
+    assert_match 'rel="noopener nofollow"', response.body
   end
 
   def test_cms_layout_with_status
