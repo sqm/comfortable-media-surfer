@@ -23,6 +23,26 @@
 
 = form.check_box :is_published
 
+.col-sm-10.offset-sm-2.p-0.mb-2
+  %p.text-muted
+    %em This must be checked to make the page publicly visible. You can control visibility by environment and date below.
+
+%fieldset.form-group
+  .col-sm-10.offset-sm-2.p-0.mb-2
+    %strong Set Visibility for Date and Environment
+
+  = form.date_field :publish_date, class: "cms-publish-date", bootstrap: { label: { text: "Publish date" }, help: "Optional. If set, the page only goes live on or after this date." }
+
+  - ComfortableMediaSurfer::Cms::CurrentEnvironment::PUBLISHED_COLUMNS.each do |bucket, column|
+    = form.check_box column, bootstrap: { label: { text: "Active on #{bucket.to_s.capitalize}" } }
+
+  - if @page.persisted?
+    .col-sm-10.offset-sm-2.p-0.mb-2
+      %p.small.text-muted
+        Currently
+        %strong= @page.publicly_visible? ? "active" : "inactive"
+        on #{ComfortableMediaSurfer::Cms::CurrentEnvironment.label}.
+
 = comfy_admin_partial "comfy/admin/cms/partials/page_form_after", form: form
 
 = form.form_actions do

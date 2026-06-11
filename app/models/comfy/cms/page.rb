@@ -42,7 +42,14 @@ class Comfy::Cms::Page < ActiveRecord::Base
   validate :validate_format_of_unescaped_slug
 
   # -- Scopes ------------------------------------------------------------------
-  scope :published, -> { where(is_published: true) }
+  # Gates publishing on the current environment's flag and an optional future
+  # publish_date, AND-ed with is_published so the public content controller
+  # respects all three. See ComfortableMediaSurfer::Cms::CurrentEnvironment.
+  scope :published, -> {
+    where(is_published: true)
+      .where(ComfortableMediaSurfer::Cms::CurrentEnvironment.published_column => true)
+      .where('publish_date IS NULL OR publish_date <= ?', Date.current)
+  }
 
   # -- Class Methods -----------------------------------------------------------
   # Tree-like structure for pages
@@ -66,6 +73,14 @@ class Comfy::Cms::Page < ActiveRecord::Base
   end
 
   # -- Instance Methods --------------------------------------------------------
+  # Whether this page passes every publishing gate for the current environment:
+  # the base is_published flag, the current env's flag, and the publish_date.
+  def publicly_visible?
+    is_published? &&
+      public_send("#{ComfortableMediaSurfer::Cms::CurrentEnvironment.published_column}?") &&
+      (publish_date.nil? || publish_date <= Date.current)
+  end
+
   # For previewing purposes sometimes we need to have full_path set. This
   # full path take care of the pages and its childs but not of the site path
   def full_path

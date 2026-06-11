@@ -11,7 +11,7 @@ module Comfy
       source_root File.expand_path('../../../..', __dir__)
 
       def generate_migration
-        %w[01_create_cms 02_add_markdown_to_snippets].each do |migration|
+        %w[01_create_cms 02_add_markdown_to_snippets 03_add_publish_date_and_environment_to_comfy_cms_pages].each do |migration|
           destination   = File.expand_path("db/migrate/#{migration}.rb", destination_root)
           migration_dir = File.dirname(destination)
           destination   = self.class.migration_exists?(migration_dir, migration)
