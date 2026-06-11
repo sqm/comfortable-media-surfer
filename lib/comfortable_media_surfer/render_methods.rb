@@ -107,7 +107,6 @@ module ComfortableMediaSurfer::RenderMethods
   # decoration must run on final HTML — the inline source is unevaluated ERB.
   def render_decorated(inline, options = {}, locals = {}, &)
     rendered = render_to_string(inline:, layout: false)
-    options.delete(:action)
     options[:html] = decorate_cms_links(rendered).html_safe
     render(options, locals, &)
   end
