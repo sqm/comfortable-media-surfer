@@ -35,18 +35,7 @@ class Comfy::Cms::ContentController < Comfy::Cms::BaseController
 protected
 
   def render_page(status = :ok)
-    return render_raw_page(status) unless mime_type == 'text/html'
-
-    rendered = render_to_string(inline: @cms_page.content_cache, layout: false)
-    render  html: decorate_cms_links(rendered).html_safe,
-            layout: app_layout,
-            status: status,
-            content_type: mime_type
-  end
-
-  # Non-HTML pages (rss, xml, plain text, etc.) are served verbatim — parsing
-  # them as HTML to decorate links would corrupt them.
-  def render_raw_page(status)
+    queue_cms_link_decoration
     render  inline: @cms_page.content_cache,
             layout: app_layout,
             status: status,

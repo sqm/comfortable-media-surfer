@@ -6,6 +6,8 @@ module ComfortableMediaSurfer::RenderMethods
   include ComfortableMediaSurfer::Content::LinkDecoration
 
   def self.included(base)
+    base.after_action :decorate_cms_response_links
+
     # If application controller doesn't have template associated with it
     # CMS will attempt to find one. This is so you don't have to explicitly
     # call render cms_page: '/something'
@@ -79,8 +81,10 @@ module ComfortableMediaSurfer::RenderMethods
     end
     cms_app_layout = @cms_layout.app_layout
     options[:layout] ||= cms_app_layout.blank? ? nil : cms_app_layout
+    options[:inline] = @cms_page.render
 
-    render_decorated(@cms_page.render, options, locals, &)
+    queue_cms_link_decoration
+    render(options, locals, &)
   end
 
   def render_cms_layout(identifier, options = {}, locals = {}, &)
@@ -98,16 +102,9 @@ module ComfortableMediaSurfer::RenderMethods
       cms_page.fragments.build(identifier: frag_identifier.to_s, content: content)
     end
     options[:layout] ||= cms_app_layout.blank? ? nil : cms_app_layout
+    options[:inline] = cms_page.render
 
-    render_decorated(cms_page.render, options, locals, &)
-  end
-
-  # Evaluate the page/layout ERB to a string, decorate its anchor tags, then
-  # render the result through the layout. Two passes are required because
-  # decoration must run on final HTML — the inline source is unevaluated ERB.
-  def render_decorated(inline, options = {}, locals = {}, &)
-    rendered = render_to_string(inline:, layout: false)
-    options[:html] = decorate_cms_links(rendered).html_safe
+    queue_cms_link_decoration
     render(options, locals, &)
   end
 end

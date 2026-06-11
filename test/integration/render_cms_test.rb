@@ -67,6 +67,8 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
         render cms_page: '/test-page', cms_fragments: {
           content: 'custom page content'
         }
+      when 'page_with_scripts_layout'
+        render cms_page: '/test-page', layout: 'with_scripts'
       else
         raise 'Invalid or no param[:type] provided'
       end
@@ -202,6 +204,21 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match 'target="_blank"', response.body
     assert_match 'rel="noopener nofollow"', response.body
+  end
+
+  def test_explicit_cms_page_preserves_content_for_captures
+    comfy_cms_layouts(:default).update_columns(
+      content: '{{cms:partial render_test/with_script}} {{cms:textarea content}}'
+    )
+    comfy_cms_pages(:child).update(slug: 'test-page', fragments_attributes: [
+      { identifier: 'content', content: 'page content' }
+    ])
+
+    get '/render-page?type=page_with_scripts_layout'
+
+    assert_response :success
+    assert_match 'SCRIPTS[<script>SQM.Components.CardsCarousel.initialize();</script>]', response.body
+    assert_match 'target="_blank"', response.body
   end
 
   def test_explicit_with_translation

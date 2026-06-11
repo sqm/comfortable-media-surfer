@@ -36,6 +36,25 @@ class Comfy::Cms::ContentControllerTest < ActionDispatch::IntegrationTest
     assert_match 'rel="noopener nofollow"', response.body
   end
 
+  def test_show_preserves_content_for_captures_with_app_layout
+    Comfy::Cms::ContentController.append_view_path(
+      File.expand_path('../../../fixtures/views', __dir__)
+    )
+    @layout.update_columns(
+      app_layout: 'with_scripts',
+      content: '{{cms:partial render_test/with_script}} {{cms:textarea content}}'
+    )
+    @page.update!(fragments_attributes: [
+      { identifier: 'content', content: 'page content' }
+    ])
+
+    get comfy_cms_render_page_path(cms_path: '')
+
+    assert_response :success
+    assert_match 'SCRIPTS[<script>SQM.Components.CardsCarousel.initialize();</script>]', response.body
+    assert_match 'target="_blank"', response.body
+  end
+
   def test_show_default_html
     get comfy_cms_render_page_path(cms_path: ''), headers: { 'Accept' => '*/*' }
     assert_response :success

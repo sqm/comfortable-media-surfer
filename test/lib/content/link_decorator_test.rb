@@ -35,6 +35,17 @@ class ContentLinkDecoratorTest < ActiveSupport::TestCase
     refute_includes result, 'rel='
   end
 
+  def test_preserves_full_document_structure
+    html = '<!DOCTYPE html><html><head><title>T</title></head>' \
+           '<body><a href="https://www.example.com">External</a></body></html>'
+
+    result = decorate(html)
+
+    assert_includes result, '<!DOCTYPE html>'
+    assert_includes result, '<head><title>T</title></head>'
+    assert_includes result, 'target="_blank"'
+  end
+
   def test_external_decoration_is_idempotent
     once  = decorate('<a href="https://www.example.com">External</a>')
     twice = decorate(once)
