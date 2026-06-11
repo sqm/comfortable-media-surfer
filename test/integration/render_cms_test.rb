@@ -196,15 +196,12 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
   def test_explicit_cms_page_decorates_links
     page = comfy_cms_pages(:child)
     page.update(slug: 'test-page', fragments_attributes: [
-      { identifier: 'content',
-        content: '<a href="https://external.test">Ext</a>' \
-                 '<a href="/quote" class="view-carriers-show-btn-cta">Get A Free Quote</a>' }
+      { identifier: 'content', content: '<a href="https://external.test">Ext</a>' }
     ])
     get '/render-page?type=page_explicit'
     assert_response :success
     assert_match 'target="_blank"', response.body
     assert_match 'rel="noopener nofollow"', response.body
-    assert_match 'so=', response.body
   end
 
   def test_explicit_with_translation

@@ -10,12 +10,7 @@ module ComfortableMediaSurfer
     private
 
       def decorate_cms_links(html)
-        LinkDecorator.new(
-          html,
-          site_host: @cms_site&.hostname,
-          current_path: @cms_page&.full_path,
-          cta_class: ComfortableMediaSurfer.config.cta_link_class
-        ).call
+        LinkDecorator.new(html, site_host: @cms_site&.hostname).call
       end
     end
   end
