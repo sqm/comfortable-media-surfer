@@ -23,16 +23,16 @@
 
 %fieldset.form-group
   .col-sm-10.offset-sm-2.p-0.mb-2
-    %strong Set Visibility for Date and Environment
+    %strong Set Published Status
 
   - ComfortableMediaSurfer::Cms::CurrentEnvironment::PUBLISHED_COLUMNS.each do |bucket, column|
-    = form.check_box column, bootstrap: { label: { text: "Active on #{bucket.to_s.capitalize}" } }
+    = form.check_box column, bootstrap: { label: { text: "Published on #{bucket.to_s.capitalize}" } }
 
   - if @page.persisted?
     .col-sm-10.offset-sm-2.p-0.mb-2
       %p.small.text-muted
         Currently
-        %strong= @page.publicly_visible? ? "active" : "inactive"
+        %strong= @page.publicly_visible? ? "published" : "not published"
         on #{ComfortableMediaSurfer::Cms::CurrentEnvironment.label}.
 
   = form.text_field :publish_date, data: { "cms-date" => true }, bootstrap: { label: { text: "Publish date" }, help: "Optional. If set, the page only goes live on or after this date." }
