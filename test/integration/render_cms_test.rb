@@ -10,6 +10,7 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
       get '/render-page'            => 'render_test#render_page'
       get '/site-path/render-page'  => 'render_test#render_page'
       get '/render-layout'          => 'render_test#render_layout'
+      get '/render-rescued'         => 'render_test#render_rescued'
     end
     comfy_cms_layouts(:default).update_columns(content: '{{cms:text content}}')
     comfy_cms_pages(:child).update(fragments_attributes: [
@@ -39,6 +40,18 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
 
   class ::RenderTestController < ApplicationController
     append_view_path(File.expand_path('../fixtures/views', File.dirname(__FILE__)))
+
+    # Mirrors host apps that serve CMS pages from their own rescue_from
+    # handler (e.g. a catch-all 404-to-CMS fallback).
+    class FallbackToCms < StandardError; end
+
+    rescue_from FallbackToCms do
+      render cms_page: '/test-page'
+    end
+
+    def render_rescued
+      raise FallbackToCms
+    end
 
     def render_basic
       case params[:type]
@@ -201,6 +214,18 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
       { identifier: 'content', content: '<a href="https://external.test">Ext</a>' }
     ])
     get '/render-page?type=page_explicit'
+    assert_response :success
+    assert_match 'target="_blank"', response.body
+    assert_match 'rel="noopener nofollow"', response.body
+  end
+
+  def test_cms_page_rendered_from_app_rescue_handler_decorates_links
+    comfy_cms_pages(:child).update(slug: 'test-page', fragments_attributes: [
+      { identifier: 'content', content: '<a href="https://external.test">Ext</a>' }
+    ])
+
+    get '/render-rescued'
+
     assert_response :success
     assert_match 'target="_blank"', response.body
     assert_match 'rel="noopener nofollow"', response.body

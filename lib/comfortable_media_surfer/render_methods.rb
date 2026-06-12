@@ -6,16 +6,11 @@ module ComfortableMediaSurfer::RenderMethods
   include ComfortableMediaSurfer::Content::LinkDecoration
 
   def self.included(base)
-    base.after_action :decorate_cms_response_links
-
     # If application controller doesn't have template associated with it
     # CMS will attempt to find one. This is so you don't have to explicitly
     # call render cms_page: '/something'
     base.rescue_from 'ActionView::MissingTemplate' do |e|
       render cms_page: request.path
-      # The raised MissingTemplate aborted the callback chain, so the
-      # decoration after_action will not fire for this render path.
-      decorate_cms_response_links
     rescue ComfortableMediaSurfer::MissingPage, ComfortableMediaSurfer::MissingSite
       raise e
     end
@@ -86,8 +81,8 @@ module ComfortableMediaSurfer::RenderMethods
     options[:layout] ||= cms_app_layout.blank? ? nil : cms_app_layout
     options[:inline] = @cms_page.render
 
-    queue_cms_link_decoration
     render(options, locals, &)
+    decorate_cms_response_links
   end
 
   def render_cms_layout(identifier, options = {}, locals = {}, &)
@@ -107,8 +102,8 @@ module ComfortableMediaSurfer::RenderMethods
     options[:layout] ||= cms_app_layout.blank? ? nil : cms_app_layout
     options[:inline] = cms_page.render
 
-    queue_cms_link_decoration
     render(options, locals, &)
+    decorate_cms_response_links
   end
 end
 
