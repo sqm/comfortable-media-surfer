@@ -25,7 +25,7 @@ class CurrentEnvironmentTest < ActiveSupport::TestCase
     assert_equal 'staging', Subject.label
   end
 
-  def test_published_columns_maps_each_bucket_to_its_column
+  def test_published_columns_maps_each_publishing_environment_to_its_column
     assert_equal(
       { production: :is_published_on_production, staging: :is_published_on_staging },
       Subject::PUBLISHED_COLUMNS

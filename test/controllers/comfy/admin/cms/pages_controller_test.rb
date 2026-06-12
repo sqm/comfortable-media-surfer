@@ -497,7 +497,7 @@ class Comfy::Admin::Cms::PagesControllerTest < ActionDispatch::IntegrationTest
   def test_get_edit_renders_publishing_fields
     r :get, edit_comfy_admin_cms_site_page_path(site_id: @site, id: @page)
     assert_response :success
-    assert_select "input[type='date'][name='page[publish_date]']"
+    assert_select "input[type='text'][name='page[publish_date]'][data-cms-date]"
     assert_select "input[type='checkbox'][name='page[is_published_on_production]']"
     assert_select "input[type='checkbox'][name='page[is_published_on_staging]']"
   end

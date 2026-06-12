@@ -9,8 +9,8 @@ module ComfortableMediaSurfer
     #
     # Every consuming codebase drafts content on staging and promotes it to
     # production, so the production/staging buckets are a shared convention. The
-    # only host-specific seam is +current_bucket+ — override it if a codebase
-    # ever detects its environment differently.
+    # only host-specific seam is +publishing_environment+ — override it if a
+    # codebase ever detects its environment differently.
     module CurrentEnvironment
     module_function
 
@@ -20,14 +20,14 @@ module ComfortableMediaSurfer
       }.freeze
 
       def published_column
-        PUBLISHED_COLUMNS.fetch(current_bucket)
+        PUBLISHED_COLUMNS.fetch(publishing_environment)
       end
 
       def label
-        current_bucket.to_s
+        publishing_environment.to_s
       end
 
-      def current_bucket
+      def publishing_environment
         Rails.env.production? ? :production : :staging
       end
     end
