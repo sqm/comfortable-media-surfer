@@ -13,6 +13,9 @@ module ComfortableMediaSurfer::RenderMethods
     # call render cms_page: '/something'
     base.rescue_from 'ActionView::MissingTemplate' do |e|
       render cms_page: request.path
+      # The raised MissingTemplate aborted the callback chain, so the
+      # decoration after_action will not fire for this render path.
+      decorate_cms_response_links
     rescue ComfortableMediaSurfer::MissingPage, ComfortableMediaSurfer::MissingSite
       raise e
     end

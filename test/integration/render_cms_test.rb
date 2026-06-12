@@ -206,6 +206,19 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
     assert_match 'rel="noopener nofollow"', response.body
   end
 
+  def test_implicit_cms_page_decorates_links
+    page = comfy_cms_pages(:child)
+    page.update(slug: 'render-basic', fragments_attributes: [
+      { identifier: 'content', content: '<a href="https://external.test">Ext</a>' }
+    ])
+
+    get '/render-basic?type=page_implicit'
+
+    assert_response :success
+    assert_match 'target="_blank"', response.body
+    assert_match 'rel="noopener nofollow"', response.body
+  end
+
   def test_explicit_cms_page_preserves_content_for_captures
     comfy_cms_layouts(:default).update_columns(
       content: '{{cms:partial render_test/with_script}} {{cms:textarea content}}'

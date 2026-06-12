@@ -18,6 +18,7 @@ module ComfortableMediaSurfer
       def decorate_cms_response_links
         return unless @cms_link_decoration_queued && response.media_type == 'text/html'
 
+        @cms_link_decoration_queued = false
         response.body = decorate_cms_links(response.body)
       end
 
