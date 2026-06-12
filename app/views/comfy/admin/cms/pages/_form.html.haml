@@ -35,7 +35,9 @@
         %strong= @page.publicly_visible? ? "published" : "not published"
         on #{ComfortableMediaSurfer::Cms::CurrentEnvironment.label}.
 
-  = form.text_field :publish_date, data: { "cms-date" => true }, bootstrap: { label: { text: "Publish date" }, help: "Optional. If set, the page only goes live on or after this date." }
+  -# Explicit ISO value: flatpickr expects Y-m-d, but host apps can override
+  -# Date#to_s formatting (e.g. to m/d/Y), which flatpickr mis-parses as Jan 1.
+  = form.text_field :publish_date, value: @page.publish_date&.iso8601, class: "cms-publish-date", data: { "cms-date" => true }, bootstrap: { label: { text: "Publish date" }, help: "Optional. If set, the page only goes live on or after this date." }
 
 = comfy_admin_partial "comfy/admin/cms/partials/page_form_after", form: form
 
