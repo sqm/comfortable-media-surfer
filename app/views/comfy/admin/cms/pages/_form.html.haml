@@ -21,7 +21,23 @@
 - if (options = ::Comfy::Cms::Page.options_for_select(site: @site, current_page: @page)).present?
   = form.select :target_page_id, [["---- #{t('.select_target_page')} ----", nil]] + options, bootstrap: {custom_control: true}
 
-= form.check_box :is_published
+%fieldset.form-group
+  .col-sm-10.offset-sm-2.p-0.mb-2
+    %strong Set Published Status
+
+  - ComfortableMediaSurfer::Cms::CurrentEnvironment::PUBLISHED_COLUMNS.each do |bucket, column|
+    = form.check_box column, bootstrap: { label: { text: "Published on #{bucket.to_s.capitalize}" } }
+
+  - if @page.persisted?
+    .col-sm-10.offset-sm-2.p-0.mb-2
+      %p.small.text-muted
+        Currently
+        %strong= @page.publicly_visible? ? "published" : "not published"
+        on #{ComfortableMediaSurfer::Cms::CurrentEnvironment.label}.
+
+  -# Explicit ISO value: flatpickr expects Y-m-d, but host apps can override
+  -# Date#to_s formatting (e.g. to m/d/Y), which flatpickr mis-parses as Jan 1.
+  = form.text_field :publish_date, value: @page.publish_date&.iso8601, class: "cms-publish-date", data: { "cms-date" => true }, bootstrap: { label: { text: "Publish date" }, help: "Optional. If set, the page only goes live on or after this date." }
 
 = comfy_admin_partial "comfy/admin/cms/partials/page_form_after", form: form
 

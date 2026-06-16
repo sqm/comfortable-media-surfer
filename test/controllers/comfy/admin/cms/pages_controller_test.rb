@@ -491,4 +491,26 @@ class Comfy::Admin::Cms::PagesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, page_one.position
     assert_equal 0, page_two.position
   end
+
+  # -- Environment-scoped publishing fields ------------------------------------
+
+  def test_get_edit_renders_publishing_fields
+    r :get, edit_comfy_admin_cms_site_page_path(site_id: @site, id: @page)
+    assert_response :success
+    assert_select "input[type='text'][name='page[publish_date]'][data-cms-date]"
+    assert_select "input[type='checkbox'][name='page[is_published_on_production]']"
+    assert_select "input[type='checkbox'][name='page[is_published_on_staging]']"
+  end
+
+  def test_update_persists_publishing_fields
+    r :put, comfy_admin_cms_site_page_path(site_id: @site, id: @page), params: { page: {
+      publish_date: '2030-01-01',
+      is_published_on_production: '0',
+      is_published_on_staging: '1'
+    } }
+    @page.reload
+    assert_equal Date.new(2030, 1, 1), @page.publish_date
+    assert_equal false, @page.is_published_on_production
+    assert_equal true,  @page.is_published_on_staging
+  end
 end

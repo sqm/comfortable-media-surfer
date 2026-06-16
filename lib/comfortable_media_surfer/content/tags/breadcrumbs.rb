@@ -26,7 +26,7 @@ class ComfortableMediaSurfer::Content::Tags::Breadcrumbs < ComfortableMediaSurfe
 
     @links = '<div id="breadcrumbs">'
     context.ancestors.reverse.each do |a|
-      next if Rails.env == 'production' && !a.is_published
+      next if Rails.env != 'development' && !a.publicly_visible?
 
       @links += "<a href=#{a.url(relative: true)}>#{a.label}</a> &raquo; "
     end

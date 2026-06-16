@@ -30,7 +30,7 @@ class ComfortableMediaSurfer::Content::Tags::Children < ComfortableMediaSurfer::
     # ActiveRecord_Associations_CollectionProxy
     @page_children = context.children.order(:position).to_ary
     unless Rails.env == 'development'
-      @page_children.delete_if { |child| !child.is_published }
+      @page_children.delete_if { |child| !child.publicly_visible? }
     end
     @page_children.delete_if { |child| @exclude.include? child.slug }
   end
