@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Comfy::Cms::ContentController < Comfy::Cms::BaseController
+  include ComfortableMediaSurfer::Content::LinkDecoration
+
   # Authentication module must have `authenticate` method
   include ComfortableMediaSurfer.config.public_auth.to_s.constantize
 
@@ -20,9 +22,8 @@ class Comfy::Cms::ContentController < Comfy::Cms::BaseController
       respond_to do |format|
         format.html { render_page }
         format.json do
-          @cms_page.content = render_to_string(
-            inline: @cms_page.content_cache,
-            layout: false
+          @cms_page.content = decorate_cms_links(
+            render_to_string(inline: @cms_page.content_cache, layout: false)
           )
           json_page = @cms_page.as_json(ComfortableMediaSurfer.config.page_to_json_options)
           render json: json_page
@@ -38,6 +39,7 @@ protected
             layout: app_layout,
             status: status,
             content_type: mime_type
+    decorate_cms_response_links
   end
 
   # it's possible to control mimetype of a page by creating a `mime_type` field

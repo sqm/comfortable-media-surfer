@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
+require_relative 'content/link_decoration'
+
 module ComfortableMediaSurfer::RenderMethods
+  include ComfortableMediaSurfer::Content::LinkDecoration
+
   def self.included(base)
     # If application controller doesn't have template associated with it
     # CMS will attempt to find one. This is so you don't have to explicitly
@@ -78,6 +82,7 @@ module ComfortableMediaSurfer::RenderMethods
     options[:inline] = @cms_page.render
 
     render(options, locals, &)
+    decorate_cms_response_links
   end
 
   def render_cms_layout(identifier, options = {}, locals = {}, &)
@@ -98,6 +103,7 @@ module ComfortableMediaSurfer::RenderMethods
     options[:inline] = cms_page.render
 
     render(options, locals, &)
+    decorate_cms_response_links
   end
 end
 
