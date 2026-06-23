@@ -163,6 +163,18 @@ class Comfy::Cms::ContentControllerTest < ActionDispatch::IntegrationTest
     assert_match %r{custom 404 page content}, response.body
   end
 
+  def test_show_not_found_renders_public_404
+    public_404 = Rails.public_path.join('404.html')
+    FileUtils.mkdir_p(Rails.public_path)
+    File.write(public_404, 'static 404 page content')
+
+    get comfy_cms_render_page_path(cms_path: 'doesnotexist')
+    assert_response :not_found
+    assert_match %r{static 404 page content}, response.body
+  ensure
+    File.delete(public_404) if public_404 && File.exist?(public_404)
+  end
+
   def test_show_with_no_site
     Comfy::Cms::Site.destroy_all
 

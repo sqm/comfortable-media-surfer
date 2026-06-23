@@ -65,10 +65,19 @@ protected
 
     if find_cms_page_by_full_path('/404')
       render_page(:not_found)
+    elsif File.exist?(public_404_path)
+      render file: public_404_path, layout: false, status: :not_found
     else
       message = "Page Not Found at: \"#{params[:cms_path]}\""
       raise ActionController::RoutingError, message
     end
+  end
+
+  # Path to the host application's static 404 page. Rendering this directly
+  # (rather than raising) keeps behaviour consistent across host apps whose
+  # exception handling would otherwise intercept ActionController::RoutingError.
+  def public_404_path
+    Rails.public_path.join('404.html')
   end
 
   # Getting page and setting content_cache and fragments data if we need to
