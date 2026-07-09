@@ -32,7 +32,7 @@ class ComfortableMediaSurfer::Content::Tags::Siblings < ComfortableMediaSurfer::
     # ActiveRecord_Associations_CollectionProxy
     @sibs = context.self_and_siblings.order(:position).to_ary
     unless Rails.env == 'development'
-      @sibs.delete_if { |sib| !sib.is_published }
+      @sibs.delete_if { |sib| !sib.publicly_visible? }
     end
     @sibs.delete_if { |sib| @exclude.include? sib.slug }
   end
@@ -44,7 +44,7 @@ class ComfortableMediaSurfer::Content::Tags::Siblings < ComfortableMediaSurfer::
       @sibs.each do |sib|
         sib_idx = @sibs.index(sib)
         next if sib.slug == context.slug
-        next if Rails.env == 'production' && !sib.is_published
+        next if Rails.env != 'development' && !sib.publicly_visible?
         next unless @sibs.index(context) # current page is excluded
 
         if sib_idx == @sibs.index(context) - 1

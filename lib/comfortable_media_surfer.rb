@@ -27,6 +27,7 @@ require_relative 'comfortable_media_surfer/seeds/file/importer'
 require_relative 'comfortable_media_surfer/seeds/file/exporter'
 require_relative 'comfortable_media_surfer/content'
 require_relative 'comfortable_media_surfer/extensions'
+require_relative 'comfortable_media_surfer/cms/current_environment'
 
 module ComfortableMediaSurfer
   Version = ComfortableMediaSurfer::VERSION

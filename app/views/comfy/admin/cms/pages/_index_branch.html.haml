@@ -25,7 +25,7 @@
 
       .item-content
         .item-title
-          - published_css_class = page.is_published? ? "published" : "draft"
+          - published_css_class = page.publicly_visible? ? "published" : "draft"
           = link_to page.label, edit_comfy_admin_cms_site_page_path(@site, page), class: published_css_class
         .item-meta
           = link_to page.url, page.url, target: "_blank"
