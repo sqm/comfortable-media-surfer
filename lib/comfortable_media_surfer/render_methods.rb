@@ -56,6 +56,7 @@ module ComfortableMediaSurfer::RenderMethods
       render_cms_layout(layout_identifier, options, locals, &)
     else
       super
+      decorate_cms_response_links if @cms_page || @cms_layout
     end
   end
 
@@ -82,7 +83,6 @@ module ComfortableMediaSurfer::RenderMethods
     options[:inline] = @cms_page.render
 
     render(options, locals, &)
-    decorate_cms_response_links
   end
 
   def render_cms_layout(identifier, options = {}, locals = {}, &)
@@ -103,7 +103,6 @@ module ComfortableMediaSurfer::RenderMethods
     options[:inline] = cms_page.render
 
     render(options, locals, &)
-    decorate_cms_response_links
   end
 end
 

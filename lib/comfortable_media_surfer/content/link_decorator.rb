@@ -39,8 +39,10 @@ module ComfortableMediaSurfer
         href = link['href'].to_s
         return unless href.match?(%r{^http.?://}) && href.exclude?(@site_host)
 
-        link['target'] = '_blank'
-        link['rel']    = 'noopener nofollow'
+        # An explicit author-set target (e.g. _self) wins; rel is a token set,
+        # so author tokens (sponsored, ugc, ...) are kept and policy tokens added.
+        link['target'] = '_blank' if link['target'].blank?
+        link['rel']    = (link['rel'].to_s.split + %w[noopener nofollow]).uniq.join(' ')
       end
     end
   end

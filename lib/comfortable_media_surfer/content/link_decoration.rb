@@ -3,12 +3,13 @@
 module ComfortableMediaSurfer
   module Content
     # Controller mixin that decorates anchor tags in rendered CMS page HTML.
-    # Each CMS render path calls decorate_cms_response_links immediately after
-    # `render` writes the response body — a single render pass, so content_for
-    # captures from CMS partials still reach the layout. A callback would not
-    # work here: host apps commonly render CMS pages from their own rescue_from
-    # handlers, where after_action callbacks are skipped. Non-HTML responses
-    # (rss, xml, etc.) are skipped since HTML parsing would corrupt them.
+    # Every CMS render path funnels through the RenderMethods#render override,
+    # which calls decorate_cms_response_links right after Rails' render writes
+    # the response body — a single render pass, so content_for captures from
+    # CMS partials still reach the layout. A callback would not work here:
+    # host apps commonly render CMS pages from their own rescue_from handlers,
+    # where after_action callbacks are skipped. Non-HTML responses (rss, xml,
+    # etc.) are skipped since HTML parsing would corrupt them.
     module LinkDecoration
     private
 

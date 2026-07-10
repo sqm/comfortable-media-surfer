@@ -39,7 +39,6 @@ protected
             layout: app_layout,
             status: status,
             content_type: mime_type
-    decorate_cms_response_links
   end
 
   # it's possible to control mimetype of a page by creating a `mime_type` field
