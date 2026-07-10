@@ -53,16 +53,11 @@ class ContentLinkDecoratorTest < ActiveSupport::TestCase
     assert_includes result, 'rel="noopener nofollow"'
   end
 
-  def test_merges_author_set_rel_tokens
+  def test_respects_author_set_rel
     result = decorate('<a href="https://www.example.com" rel="sponsored">External</a>')
 
-    assert_includes result, 'rel="sponsored noopener nofollow"'
-  end
-
-  def test_does_not_duplicate_rel_tokens
-    result = decorate('<a href="https://www.example.com" rel="nofollow">External</a>')
-
-    assert_includes result, 'rel="nofollow noopener"'
+    assert_includes result, 'rel="sponsored"'
+    refute_includes result, 'noopener'
   end
 
   def test_external_decoration_is_idempotent
