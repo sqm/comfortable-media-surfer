@@ -7,7 +7,7 @@
 class ComfortableMediaSurfer::Content::Tags::Textarea < ComfortableMediaSurfer::Content::Tags::Fragment
   def form_field(object_name, view, index)
     name    = "#{object_name}[fragments_attributes][#{index}][content]"
-    options = { id: form_field_id, data: { 'cms-cm-mode' => 'text/html' } }
+    options = { id: form_field_id, data: { 'cms-cm-mode' => 'text/html' } }.merge(help_aria_attributes)
     input   = view.send(:text_area_tag, name, content, options)
 
     yield input

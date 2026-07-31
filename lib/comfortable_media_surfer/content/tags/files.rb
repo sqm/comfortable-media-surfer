@@ -16,7 +16,8 @@ class ComfortableMediaSurfer::Content::Tags::Files < ComfortableMediaSurfer::Con
 
   def form_field(object_name, view, index)
     name    = "#{object_name}[fragments_attributes][#{index}][files][]"
-    input   = view.send(:file_field_tag, name, id: form_field_id, multiple: true, class: 'form-control')
+    options = { id: form_field_id, multiple: true, class: 'form-control' }.merge(help_aria_attributes)
+    input   = view.send(:file_field_tag, name, options)
 
     attachments_partial =
       if fragment.attachments

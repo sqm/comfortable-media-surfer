@@ -14,7 +14,7 @@ class ComfortableMediaSurfer::Content::Tags::Checkbox < ComfortableMediaSurfer::
     input = view.content_tag(:div, class: 'form-check mt-2') do
       view.concat view.hidden_field_tag(name, '0', id: nil)
 
-      options = { id: form_field_id, class: 'form-check-input position-static' }
+      options = { id: form_field_id, class: 'form-check-input position-static' }.merge(help_aria_attributes)
       view.concat view.check_box_tag(name, '1', content.present?, options)
     end
 

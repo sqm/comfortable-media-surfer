@@ -96,6 +96,68 @@ class FormBuilderTest < ActionView::TestCase
     assert_xml_equal expected, actual
   end
 
+  def test_fragment_field_for_text_with_help
+    tag = ComfortableMediaSurfer::Content::Tags::Text.new(
+      context: @page,
+      params: ['test', { 'help' => 'Leave this blank to use the general default.' }]
+    )
+    actual = @builder.fragment_field(tag, 123)
+    expected = if RAILS_EDGE
+                 <<~HTML
+                   <div class="form-group row">
+                     <label class="renderable-true col-form-label col-sm-2 text-sm-right" for="fragment-test">Test</label>
+                     <div class="col-sm-10">
+                       <input name="page[fragments_attributes][123][identifier]" type="hidden" value="test"/>
+                       <input name="page[fragments_attributes][123][tag]" type="hidden" value="text"/>
+                       <input aria-describedby="fragment-test-help" class="form-control" id="fragment-test" name="page[fragments_attributes][123][content]" type="text"/>
+                       <small class="form-text text-muted" id="fragment-test-help">Leave this blank to use the general default.</small>
+                     </div>
+                   </div>
+                 HTML
+               else
+                 <<~HTML
+                   <div class="form-group row">
+                     <label class="renderable-true col-form-label col-sm-2 text-sm-right" for="fragment-test">Test</label>
+                     <div class="col-sm-10">
+                       <input autocomplete="off" name="page[fragments_attributes][123][identifier]" type="hidden" value="test"/>
+                       <input autocomplete="off" name="page[fragments_attributes][123][tag]" type="hidden" value="text"/>
+                       <input aria-describedby="fragment-test-help" class="form-control" id="fragment-test" name="page[fragments_attributes][123][content]" type="text"/>
+                       <small class="form-text text-muted" id="fragment-test-help">Leave this blank to use the general default.</small>
+                     </div>
+                   </div>
+                 HTML
+               end
+    assert_xml_equal expected, actual
+  end
+
+  def test_fragment_field_escapes_help
+    tag = ComfortableMediaSurfer::Content::Tags::Text.new(
+      context: @page,
+      params: ['test', { 'help' => '<b>bold</b> & more' }]
+    )
+    html = @builder.fragment_field(tag, 123).to_s
+    assert_includes html, '&lt;b&gt;bold&lt;/b&gt; &amp; more'
+    refute_includes html, '<b>bold</b>'
+  end
+
+  # A tag that forgets `help_aria_attributes` still renders the <small>, so no
+  # other test in this suite would fail. Driven off the tag registry so tags
+  # added later are covered too.
+  def test_fragment_field_wires_aria_describedby_for_every_registered_tag
+    fragment_class = ComfortableMediaSurfer::Content::Tags::Fragment
+    tag_classes = ComfortableMediaSurfer::Content::Renderer.tags.values.uniq.select do |klass|
+      klass <= fragment_class && klass.instance_method(:form_field).owner != fragment_class
+    end
+    assert_operator tag_classes.size, :>=, 10
+
+    tag_classes.each do |klass|
+      html = @builder.fragment_field(klass.new(context: @page, params: ['test', { 'help' => 'HINT' }]), 1).to_s
+      assert_includes html, 'aria-describedby="fragment-test-help"', "#{klass} input is missing aria-describedby"
+      assert_includes html, '<small class="form-text text-muted" id="fragment-test-help">HINT</small>',
+                      "#{klass} is missing the hint element"
+    end
+  end
+
   def test_fragment_field_for_checkbox
     tag = ComfortableMediaSurfer::Content::Tags::Checkbox.new(context: @page, params: ['test'])
     actual = @builder.fragment_field(tag, 123)
@@ -159,6 +221,46 @@ class FormBuilderTest < ActionView::TestCase
                          <input autocomplete="off" name="page[fragments_attributes][123][boolean]" type="hidden" value="0"/>
                          <input checked="checked" class="form-check-input position-static" id="fragment-boolean" name="page[fragments_attributes][123][boolean]" type="checkbox" value="1"/>
                        </div>
+                     </div>
+                   </div>
+                 HTML
+               end
+    assert_xml_equal expected, actual
+  end
+
+  def test_fragment_field_for_checkbox_with_help
+    tag = ComfortableMediaSurfer::Content::Tags::Checkbox.new(
+      context: @page,
+      params: ['test', { 'help' => 'Tick this to hide the section.' }]
+    )
+    actual = @builder.fragment_field(tag, 123)
+    expected = if RAILS_EDGE
+                 <<~HTML
+                   <div class="form-group row">
+                     <label class="renderable-true col-form-label col-sm-2 text-sm-right" for="fragment-test">Test</label>
+                     <div class="col-sm-10">
+                       <input name="page[fragments_attributes][123][identifier]" type="hidden" value="test"/>
+                       <input name="page[fragments_attributes][123][tag]" type="hidden" value="checkbox"/>
+                       <div class="form-check mt-2">
+                         <input name="page[fragments_attributes][123][boolean]" type="hidden" value="0"/>
+                         <input aria-describedby="fragment-test-help" class="form-check-input position-static" id="fragment-test" name="page[fragments_attributes][123][boolean]" type="checkbox" value="1"/>
+                       </div>
+                       <small class="form-text text-muted" id="fragment-test-help">Tick this to hide the section.</small>
+                     </div>
+                   </div>
+                 HTML
+               else
+                 <<~HTML
+                   <div class="form-group row">
+                     <label class="renderable-true col-form-label col-sm-2 text-sm-right" for="fragment-test">Test</label>
+                     <div class="col-sm-10">
+                       <input autocomplete="off" name="page[fragments_attributes][123][identifier]" type="hidden" value="test"/>
+                       <input autocomplete="off" name="page[fragments_attributes][123][tag]" type="hidden" value="checkbox"/>
+                       <div class="form-check mt-2">
+                         <input autocomplete="off" name="page[fragments_attributes][123][boolean]" type="hidden" value="0"/>
+                         <input aria-describedby="fragment-test-help" class="form-check-input position-static" id="fragment-test" name="page[fragments_attributes][123][boolean]" type="checkbox" value="1"/>
+                       </div>
+                       <small class="form-text text-muted" id="fragment-test-help">Tick this to hide the section.</small>
                      </div>
                    </div>
                  HTML
@@ -448,7 +550,7 @@ class FormBuilderTest < ActionView::TestCase
   end
 
   def test_fragment_field_for_textarea
-    tag = ComfortableMediaSurfer::Content::Tags::File.new(context: @page, params: ['test'])
+    tag = ComfortableMediaSurfer::Content::Tags::Textarea.new(context: @page, params: ['test'])
     actual = @builder.fragment_field(tag, 123)
     expected = if RAILS_EDGE
                  <<~HTML
@@ -456,10 +558,8 @@ class FormBuilderTest < ActionView::TestCase
                      <label class="renderable-true col-form-label col-sm-2 text-sm-right" for="fragment-test">Test</label>
                      <div class="col-sm-10">
                        <input name="page[fragments_attributes][123][identifier]" type="hidden" value="test"/>
-                       <input name="page[fragments_attributes][123][tag]" type="hidden" value="file"/>
-                       <input class="form-control" id="fragment-test" name="page[fragments_attributes][123][files]" type="file"/>
-                       <div class="fragment-attachments">
-                       </div>
+                       <input name="page[fragments_attributes][123][tag]" type="hidden" value="textarea"/>
+                       <textarea data-cms-cm-mode="text/html" id="fragment-test" name="page[fragments_attributes][123][content]"></textarea>
                      </div>
                    </div>
                  HTML
@@ -469,9 +569,8 @@ class FormBuilderTest < ActionView::TestCase
                      <label class="renderable-true col-form-label col-sm-2 text-sm-right" for="fragment-test">Test</label>
                      <div class="col-sm-10">
                        <input autocomplete="off" name="page[fragments_attributes][123][identifier]" type="hidden" value="test"/>
-                       <input autocomplete="off" name="page[fragments_attributes][123][tag]" type="hidden" value="file"/>
-                       <input class="form-control" id="fragment-test" name="page[fragments_attributes][123][files]" type="file"/>
-                       <div class="fragment-attachments"></div>
+                       <input autocomplete="off" name="page[fragments_attributes][123][tag]" type="hidden" value="textarea"/>
+                       <textarea data-cms-cm-mode="text/html" id="fragment-test" name="page[fragments_attributes][123][content]"></textarea>
                      </div>
                    </div>
                  HTML

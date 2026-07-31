@@ -124,6 +124,15 @@ class ContentParamsParserTest < ActiveSupport::TestCase
     ], PARSER.new('a: {b: {c: d, e: f}}, g: {h: i}').params
   end
 
+  def test_params_with_quoted_help_text
+    assert_equal [
+      'webpage_name',
+      { 'render' => 'false', 'namespace' => 'Structured_Data', 'help' => 'Leave blank, or set a custom name.' }
+    ], PARSER.new(
+      'webpage_name, render: false, namespace: "Structured_Data", help: "Leave blank, or set a custom name."'
+    ).params
+  end
+
   def test_params_invalid_hash
     message = 'Invalid params: a: b: c:'
     assert_raises PARSER::Error, message do

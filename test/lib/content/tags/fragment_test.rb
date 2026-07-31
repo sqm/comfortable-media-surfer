@@ -24,6 +24,40 @@ class ContentTagsFragmentTest < ActiveSupport::TestCase
     assert_equal 'test', tag.namespace
   end
 
+  def test_init_with_help
+    tag = ComfortableMediaSurfer::Content::Tags::Fragment.new(
+      context: @page,
+      params: ['content', { 'help' => 'Leave this blank to use the general default.' }]
+    )
+    assert_equal 'Leave this blank to use the general default.', tag.help
+    assert_equal 'fragment-content-help', tag.form_field_help_id
+    assert_equal({ 'aria-describedby' => 'fragment-content-help' }, tag.help_aria_attributes)
+  end
+
+  def test_init_without_help
+    tag = ComfortableMediaSurfer::Content::Tags::Fragment.new(context: @page, params: ['content'])
+    assert_nil tag.help
+    assert_empty tag.help_aria_attributes
+  end
+
+  def test_help_is_not_rendered_or_stored
+    tag = ComfortableMediaSurfer::Content::Tags::Fragment.new(
+      context: @page,
+      params: ['content', { 'help' => 'HINT' }]
+    )
+    assert_equal 'content', tag.render
+    assert_equal 'content', tag.fragment.content
+  end
+
+  def test_init_with_blank_help
+    tag = ComfortableMediaSurfer::Content::Tags::Fragment.new(
+      context: @page,
+      params: ['content', { 'help' => '' }]
+    )
+    assert_nil tag.help
+    assert_empty tag.help_aria_attributes
+  end
+
   def test_init_without_identifier
     message = 'Missing identifier for fragment tag: {{cms:markdown}}'
     assert_raises ComfortableMediaSurfer::Content::Tag::Error, message do

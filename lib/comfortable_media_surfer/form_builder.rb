@@ -17,11 +17,13 @@ class ComfortableMediaSurfer::FormBuilder < ComfyBootstrapForm::FormBuilder
 
       label = I18n.t("comfy.cms.content.tag.#{tag.identifier}", default: tag.identifier.titleize)
       renderable = tag.respond_to?(:renderable) ? tag.renderable : true
+      help_text = fragment_help_text(tag)
 
       form_group bootstrap: { label: { text: label, for: tag.form_field_id, class: "renderable-#{renderable}" } } do
         concat identifer_input
         concat tag_name_input
         concat tag_input
+        concat help_text if help_text.present?
       end
     end
   end
@@ -39,5 +41,15 @@ class ComfortableMediaSurfer::FormBuilder < ComfyBootstrapForm::FormBuilder
         end
       end
     end
+  end
+
+private
+
+  # `form_group` ignores `bootstrap: { help: }` and ComfyBootstrapForm's
+  # `draw_help` takes no id, so the hint markup is reproduced here with one.
+  def fragment_help_text(tag)
+    return unless tag.respond_to?(:help) && tag.help.present?
+
+    content_tag(:small, tag.help, class: 'form-text text-muted', id: tag.form_field_help_id)
   end
 end
