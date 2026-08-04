@@ -45,11 +45,12 @@ class ComfortableMediaSurfer::FormBuilder < ComfyBootstrapForm::FormBuilder
 
 private
 
-  # `form_group` ignores `bootstrap: { help: }` and ComfyBootstrapForm's
-  # `draw_help` takes no id, so the hint markup is reproduced here with one.
+  # `form_group` ignores `bootstrap: { help: }`, and ComfyBootstrapForm only
+  # renders help text from its field helpers, which fragment inputs don't use.
+  # So the markup its `draw_help` emits is reproduced here.
   def fragment_help_text(tag)
     return unless tag.respond_to?(:help) && tag.help.present?
 
-    content_tag(:small, tag.help, class: 'form-text text-muted', id: tag.form_field_help_id)
+    content_tag(:small, tag.help, class: 'form-text text-muted')
   end
 end

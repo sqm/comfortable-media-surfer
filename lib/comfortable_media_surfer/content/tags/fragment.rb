@@ -67,15 +67,4 @@ class ComfortableMediaSurfer::Content::Tags::Fragment < ComfortableMediaSurfer::
   def form_field_id
     "fragment-#{@identifier}"
   end
-
-  def form_field_help_id
-    "#{form_field_id}-help"
-  end
-
-  # Empty when no `help` was given, so tags can merge this unconditionally.
-  def help_aria_attributes
-    return {} if help.blank?
-
-    { 'aria-describedby' => form_field_help_id }
-  end
 end

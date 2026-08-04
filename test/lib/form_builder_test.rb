@@ -109,8 +109,8 @@ class FormBuilderTest < ActionView::TestCase
                      <div class="col-sm-10">
                        <input name="page[fragments_attributes][123][identifier]" type="hidden" value="test"/>
                        <input name="page[fragments_attributes][123][tag]" type="hidden" value="text"/>
-                       <input aria-describedby="fragment-test-help" class="form-control" id="fragment-test" name="page[fragments_attributes][123][content]" type="text"/>
-                       <small class="form-text text-muted" id="fragment-test-help">Leave this blank to use the general default.</small>
+                       <input class="form-control" id="fragment-test" name="page[fragments_attributes][123][content]" type="text"/>
+                       <small class="form-text text-muted">Leave this blank to use the general default.</small>
                      </div>
                    </div>
                  HTML
@@ -121,8 +121,8 @@ class FormBuilderTest < ActionView::TestCase
                      <div class="col-sm-10">
                        <input autocomplete="off" name="page[fragments_attributes][123][identifier]" type="hidden" value="test"/>
                        <input autocomplete="off" name="page[fragments_attributes][123][tag]" type="hidden" value="text"/>
-                       <input aria-describedby="fragment-test-help" class="form-control" id="fragment-test" name="page[fragments_attributes][123][content]" type="text"/>
-                       <small class="form-text text-muted" id="fragment-test-help">Leave this blank to use the general default.</small>
+                       <input class="form-control" id="fragment-test" name="page[fragments_attributes][123][content]" type="text"/>
+                       <small class="form-text text-muted">Leave this blank to use the general default.</small>
                      </div>
                    </div>
                  HTML
@@ -138,24 +138,6 @@ class FormBuilderTest < ActionView::TestCase
     html = @builder.fragment_field(tag, 123).to_s
     assert_includes html, '&lt;b&gt;bold&lt;/b&gt; &amp; more'
     refute_includes html, '<b>bold</b>'
-  end
-
-  # A tag that forgets `help_aria_attributes` still renders the <small>, so no
-  # other test in this suite would fail. Driven off the tag registry so tags
-  # added later are covered too.
-  def test_fragment_field_wires_aria_describedby_for_every_registered_tag
-    fragment_class = ComfortableMediaSurfer::Content::Tags::Fragment
-    tag_classes = ComfortableMediaSurfer::Content::Renderer.tags.values.uniq.select do |klass|
-      klass <= fragment_class && klass.instance_method(:form_field).owner != fragment_class
-    end
-    assert_operator tag_classes.size, :>=, 10
-
-    tag_classes.each do |klass|
-      html = @builder.fragment_field(klass.new(context: @page, params: ['test', { 'help' => 'HINT' }]), 1).to_s
-      assert_includes html, 'aria-describedby="fragment-test-help"', "#{klass} input is missing aria-describedby"
-      assert_includes html, '<small class="form-text text-muted" id="fragment-test-help">HINT</small>',
-                      "#{klass} is missing the hint element"
-    end
   end
 
   def test_fragment_field_for_checkbox
@@ -243,9 +225,9 @@ class FormBuilderTest < ActionView::TestCase
                        <input name="page[fragments_attributes][123][tag]" type="hidden" value="checkbox"/>
                        <div class="form-check mt-2">
                          <input name="page[fragments_attributes][123][boolean]" type="hidden" value="0"/>
-                         <input aria-describedby="fragment-test-help" class="form-check-input position-static" id="fragment-test" name="page[fragments_attributes][123][boolean]" type="checkbox" value="1"/>
+                         <input class="form-check-input position-static" id="fragment-test" name="page[fragments_attributes][123][boolean]" type="checkbox" value="1"/>
                        </div>
-                       <small class="form-text text-muted" id="fragment-test-help">Tick this to hide the section.</small>
+                       <small class="form-text text-muted">Tick this to hide the section.</small>
                      </div>
                    </div>
                  HTML
@@ -258,9 +240,9 @@ class FormBuilderTest < ActionView::TestCase
                        <input autocomplete="off" name="page[fragments_attributes][123][tag]" type="hidden" value="checkbox"/>
                        <div class="form-check mt-2">
                          <input autocomplete="off" name="page[fragments_attributes][123][boolean]" type="hidden" value="0"/>
-                         <input aria-describedby="fragment-test-help" class="form-check-input position-static" id="fragment-test" name="page[fragments_attributes][123][boolean]" type="checkbox" value="1"/>
+                         <input class="form-check-input position-static" id="fragment-test" name="page[fragments_attributes][123][boolean]" type="checkbox" value="1"/>
                        </div>
-                       <small class="form-text text-muted" id="fragment-test-help">Tick this to hide the section.</small>
+                       <small class="form-text text-muted">Tick this to hide the section.</small>
                      </div>
                    </div>
                  HTML
