@@ -7,10 +7,15 @@
 #     helpers. Good example would be content for meta tags.
 #   `namespace`:
 #     Just a string that allows grouping of form elements in the admin area
+#   `help`:
+#     Hint text shown under the field in the admin area. Never rendered on the
+#     page or stored as content. Must be quoted, and renders as plain text, so
+#     no HTML. An unquoted value raises ParamsParser::Error, which the admin
+#     fragment form does not rescue.
 #
 class ComfortableMediaSurfer::Content::Tags::Fragment < ComfortableMediaSurfer::Content::Tag
   attr_accessor :renderable
-  attr_reader :identifier, :namespace
+  attr_reader :identifier, :namespace, :help
 
   # @type [{String => String}]
   attr_reader :options
@@ -27,6 +32,7 @@ class ComfortableMediaSurfer::Content::Tags::Fragment < ComfortableMediaSurfer::
 
     @namespace  = @options['namespace'] || 'default'
     @renderable = @options['render'].to_s.downcase != 'false'
+    @help       = @options['help'].presence
   end
 
   # Grabs existing fragment record or spins up a new instance if there's none
