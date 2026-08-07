@@ -10,6 +10,7 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
       get '/render-page'            => 'render_test#render_page'
       get '/site-path/render-page'  => 'render_test#render_page'
       get '/render-layout'          => 'render_test#render_layout'
+      get '/render-rescued'         => 'render_test#render_rescued'
     end
     comfy_cms_layouts(:default).update_columns(content: '{{cms:text content}}')
     comfy_cms_pages(:child).update(fragments_attributes: [
@@ -40,6 +41,18 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
   class ::RenderTestController < ApplicationController
     append_view_path(File.expand_path('../fixtures/views', File.dirname(__FILE__)))
 
+    # Mirrors host apps that serve CMS pages from their own rescue_from
+    # handler (e.g. a catch-all 404-to-CMS fallback).
+    class FallbackToCms < StandardError; end
+
+    rescue_from FallbackToCms do
+      render cms_page: '/test-page'
+    end
+
+    def render_rescued
+      raise FallbackToCms
+    end
+
     def render_basic
       case params[:type]
       when 'text'
@@ -67,6 +80,8 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
         render cms_page: '/test-page', cms_fragments: {
           content: 'custom page content'
         }
+      when 'page_with_scripts_layout'
+        render cms_page: '/test-page', layout: 'with_scripts'
       else
         raise 'Invalid or no param[:type] provided'
       end
@@ -82,6 +97,10 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
           content: 'TestText',
           content_b: { partial: 'render_test/test' },
           content_c: { template: 'render_test/render_layout' }
+        }
+      when 'layout_with_link'
+        render cms_layout: 'default', cms_fragments: {
+          content: '<a href="https://external.test">Ext</a>'
         }
       when 'layout_with_status'
         render cms_layout: 'default', status: 404
@@ -189,6 +208,57 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
     assert_equal 'custom page content', response.body
   end
 
+  def test_explicit_cms_page_decorates_links
+    page = comfy_cms_pages(:child)
+    page.update(slug: 'test-page', fragments_attributes: [
+      { identifier: 'content', content: '<a href="https://external.test">Ext</a>' }
+    ])
+    get '/render-page?type=page_explicit'
+    assert_response :success
+    assert_match 'target="_blank"', response.body
+    assert_match 'rel="noopener nofollow"', response.body
+  end
+
+  def test_cms_page_rendered_from_app_rescue_handler_decorates_links
+    comfy_cms_pages(:child).update(slug: 'test-page', fragments_attributes: [
+      { identifier: 'content', content: '<a href="https://external.test">Ext</a>' }
+    ])
+
+    get '/render-rescued'
+
+    assert_response :success
+    assert_match 'target="_blank"', response.body
+    assert_match 'rel="noopener nofollow"', response.body
+  end
+
+  def test_implicit_cms_page_decorates_links
+    page = comfy_cms_pages(:child)
+    page.update(slug: 'render-basic', fragments_attributes: [
+      { identifier: 'content', content: '<a href="https://external.test">Ext</a>' }
+    ])
+
+    get '/render-basic?type=page_implicit'
+
+    assert_response :success
+    assert_match 'target="_blank"', response.body
+    assert_match 'rel="noopener nofollow"', response.body
+  end
+
+  def test_explicit_cms_page_preserves_content_for_captures
+    comfy_cms_layouts(:default).update_columns(
+      content: '{{cms:partial render_test/with_script}} {{cms:textarea content}}'
+    )
+    comfy_cms_pages(:child).update(slug: 'test-page', fragments_attributes: [
+      { identifier: 'content', content: 'page content' }
+    ])
+
+    get '/render-page?type=page_with_scripts_layout'
+
+    assert_response :success
+    assert_match 'SCRIPTS[<script>SQM.Components.CardsCarousel.initialize();</script>]', response.body
+    assert_match 'target="_blank"', response.body
+  end
+
   def test_explicit_with_translation
     I18n.locale = :fr
 
@@ -222,6 +292,13 @@ class RenderCmsIntergrationTest < ActionDispatch::IntegrationTest
     assert assigns(:cms_site)
     assert assigns(:cms_layout)
     assert_equal comfy_cms_layouts(:default), assigns(:cms_layout)
+  end
+
+  def test_cms_layout_decorates_links
+    get '/render-layout?type=layout_with_link'
+    assert_response :success
+    assert_match 'target="_blank"', response.body
+    assert_match 'rel="noopener nofollow"', response.body
   end
 
   def test_cms_layout_with_status
