@@ -17,6 +17,8 @@ import "codemirror/mode/htmlmixed/htmlmixed";
           autoCloseTags: true,
           lineNumbers: true,
           viewportMargin: Infinity,
+          spellcheck: true,
+          inputStyle: "contenteditable",
         });
         codeMirrorInstances.push(codemirror);
       }
